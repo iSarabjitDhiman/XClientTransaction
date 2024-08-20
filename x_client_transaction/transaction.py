@@ -13,19 +13,43 @@ from .interpolate import interpolate
 from .rotation import convert_rotation_to_matrix
 from .utils import float_to_hex, is_odd, base64_encode
 
+ON_DEMAND_FILE_REGEX = re.compile(
+    r"""['|\"]{1}ondemand\.s['|\"]{1}:\s*['|\"]{1}([\w]*)['|\"]{1}""", flags=re.VERBOSE | re.VERBOSE)
+INDICES_REGEX = re.compile(
+    r"""(\(\w{1}\[(\d{1,2})\],\s*16\))+""", flags=re.VERBOSE | re.MULTILINE)
+
 
 class ClientTransaction:
-    DEFAULT_KEYWORD = "obfiowerehiring"
-    DEFAULT_ROW_INDEX = 2
     ADDITIONAL_RANDOM_NUMBER = 3
-    DEFAULT_KEY_BYTES_INDICES = [2, 42, 45]
+    DEFAULT_KEYWORD = "obfiowerehiring"
+    DEFAULT_ROW_INDEX = None
+    DEFAULT_KEY_BYTES_INDICES = None
 
     def __init__(self, home_page_response: Union[bs4.BeautifulSoup, requests.models.Response]):
         self.home_page_response = self.validate_response(home_page_response)
+        self.DEFAULT_ROW_INDEX, self.DEFAULT_KEY_BYTES_INDICES = self.get_indices(
+            self.home_page_response)
         self.key = self.get_key(response=self.home_page_response)
         self.key_bytes = self.get_key_bytes(key=self.key)
         self.animation_key = self.get_animation_key(
             key_bytes=self.key_bytes, response=self.home_page_response)
+
+    def get_indices(self, home_page_response=None):
+        key_byte_indices = []
+        response = self.validate_response(
+            home_page_response) or self.home_page_response
+        on_demand_file = ON_DEMAND_FILE_REGEX.search(str(response))
+        if on_demand_file:
+            on_demand_file_url = f"https://abs.twimg.com/responsive-web/client-web/ondemand.s.{on_demand_file.group(1)}a.js"
+            on_demand_file_response = requests.get(on_demand_file_url)
+            key_byte_indices_match = INDICES_REGEX.finditer(
+                str(on_demand_file_response.text))
+            for item in key_byte_indices_match:
+                key_byte_indices.append(item.group(2))
+        if not key_byte_indices:
+            raise Exception("Couldn't get KEY_BYTE indices")
+        key_byte_indices = list(map(int, key_byte_indices))
+        return key_byte_indices[0], key_byte_indices[1:]
 
     def validate_response(self, response: Union[bs4.BeautifulSoup, requests.models.Response]):
         if not isinstance(response, (bs4.BeautifulSoup, requests.models.Response)):
