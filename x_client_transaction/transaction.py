@@ -14,9 +14,9 @@ from .rotation import convert_rotation_to_matrix
 from .utils import float_to_hex, is_odd, base64_encode
 
 ON_DEMAND_FILE_REGEX = re.compile(
-    r"""['|\"]{1}ondemand\.s['|\"]{1}:\s*['|\"]{1}([\w]*)['|\"]{1}""", flags=re.VERBOSE | re.VERBOSE)
+    r"""['|\"]{1}ondemand\.s['|\"]{1}:\s*['|\"]{1}([\w]*)['|\"]{1}""", flags=(re.VERBOSE | re.MULTILINE))
 INDICES_REGEX = re.compile(
-    r"""(\(\w{1}\[(\d{1,2})\],\s*16\))+""", flags=re.VERBOSE | re.MULTILINE)
+    r"""(\(\w{1}\[(\d{1,2})\],\s*16\))+""", flags=(re.VERBOSE | re.MULTILINE))
 
 
 class ClientTransaction:
