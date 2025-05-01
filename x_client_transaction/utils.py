@@ -11,10 +11,9 @@ class Math:
     def round(num):
         # using javascript...? just use the native Math.round(num)
         x = math.floor(num)
-        if (num - x) < 0.5:
-            return x
-        else:
-            return math.ceil(num)
+        if (num - x) >= 0.5:
+            x = math.ceil(num)
+        return math.copysign(x, num)
 
 
 def handle_x_migration(session):
