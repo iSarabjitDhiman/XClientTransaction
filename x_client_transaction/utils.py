@@ -10,9 +10,11 @@ class Math:
     @staticmethod
     def round(num):
         # using javascript...? just use the native Math.round(num)
-        if num == -0 or -0.5 <= num < 0:
-            return -0.0
-        return math.floor(num + 0.5)
+        x = math.floor(num)
+        if (num - x) < 0.5:
+            return x
+        else:
+            return math.ceil(num)
 
 
 def handle_x_migration(session):
