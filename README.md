@@ -34,6 +34,15 @@ python quickstart.py
 
 ## Get x.com Home Page and ondemand.s File Response
 
+> **⚠️ Important:** X redesigned its homepage (`x.com/home`) in 2026 to use a new
+> React Router (TSR) architecture. The new homepage may no longer contain the
+> `ondemand.s` file reference, causing `get_ondemand_file_url()` to fail with
+> `AttributeError: 'NoneType' object has no attribute 'group'`.
+>
+> **Fix:** If the homepage does not contain `ondemand.s`, use the **search page**
+> (`https://x.com/search?q=AI&f=live`) instead — it still uses the legacy frontend
+> and contains the `ondemand.s` file. See the troubleshooting section below.
+
 #### Synchronous Version
 
 ```python
@@ -133,6 +142,34 @@ print(transaction_id_for_user_by_screen_name_endpoint)
 ## Authors
 
 - [@iSarabjitDhiman](https://www.github.com/iSarabjitDhiman)
+
+## Troubleshooting
+
+### `AttributeError: 'NoneType' object has no attribute 'group'`
+
+X redesigned its homepage in 2026 to use a new React Router (TSR) architecture.
+The new homepage no longer contains the `ondemand.s` file reference, so
+`ON_DEMAND_FILE_REGEX.search()` returns `None`.
+
+**Fix:** Use the search page instead of the homepage:
+
+```python
+# Instead of:
+home_page = session.get(url="https://x.com/home")
+
+# Use the search page (still uses legacy frontend with ondemand.s):
+home_page = session.get(url="https://x.com/search?q=AI&f=live")
+home_page_response = bs4.BeautifulSoup(home_page.content, 'html.parser')
+ondemand_file_url = get_ondemand_file_url(response=home_page_response)
+```
+
+The search page (`x.com/search`) has not been redesigned and still uses the
+`responsive-web/client-web/` path with the `ondemand.s` file.
+
+### "Couldn't get KEY_BYTE indices" error
+
+If you get this error, try passing `ondemand_file.text` (the raw response text)
+instead of a `BeautifulSoup` object as the `ondemand_file_response` parameter.
 
 ## Feedback
 

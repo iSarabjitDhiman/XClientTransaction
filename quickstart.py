@@ -18,6 +18,13 @@ home_page_response = handle_x_migration(session=session)
 home_page = session.get(url="https://x.com/home")
 home_page_response = bs4.BeautifulSoup(home_page.content, 'html.parser')
 
+# NOTE: X redesigned its homepage in 2026 to use a new React Router (TSR)
+# architecture. The new homepage may not contain the ondemand.s file reference.
+# If get_ondemand_file_url() fails, use the search page as a fallback:
+#   search_page = session.get(url="https://x.com/search?q=AI&f=live")
+#   home_page_response = bs4.BeautifulSoup(search_page.content, 'html.parser')
+# The search page still uses the legacy frontend with ondemand.s.
+
 
 # GET ondemand.s FILE RESPONSE
 ondemand_file_url = get_ondemand_file_url(response=home_page_response)
