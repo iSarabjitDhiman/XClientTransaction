@@ -56,9 +56,23 @@ def get_migration_form(response: bs4.BeautifulSoup):
 
 
 def get_ondemand_file_url(response: bs4.BeautifulSoup):
-    on_demand_file_index = ON_DEMAND_FILE_REGEX.search(str(response)).group(1)
+    match = ON_DEMAND_FILE_REGEX.search(str(response))
+    if not match:
+        raise ValueError(
+            "Could not find ondemand.s file reference in the response. "
+            "X may have changed its frontend structure. "
+            "Try using the search page (https://x.com/search?q=AI&f=live) "
+            "instead of the homepage, as it still uses the legacy frontend."
+        )
+    on_demand_file_index = match.group(1)
     regex = re.compile(ON_DEMAND_HASH_PATTERN.format(on_demand_file_index))
-    filename = regex.search(str(response)).group(1)
+    file_match = regex.search(str(response))
+    if not file_match:
+        raise ValueError(
+            f"Found ondemand.s index ({on_demand_file_index}) but could not extract the file hash. "
+            "The HTML structure may have changed."
+        )
+    filename = file_match.group(1)
     return ON_DEMAND_FILE_URL.format(filename=filename)
 
 
