@@ -62,6 +62,43 @@ def get_ondemand_file_url(response: bs4.BeautifulSoup):
     return ON_DEMAND_FILE_URL.format(filename=filename)
 
 
+def fetch_home_page(session, url: str = "https://x.com/home"):
+    """Fetch a page and return it as BeautifulSoup.
+
+    X redesigned its homepage to use a new React Router (TSR) architecture.
+    The new homepage no longer contains the ondemand.s file reference.
+    However, the search page (https://x.com/search?q=AI&f=live) still uses
+    the legacy frontend and contains the ondemand.s file.
+
+    This helper tries the given URL first, and if ondemand.s is not found,
+    falls back to the search page.
+
+    Args:
+        session: A requests.Session or curl_cffi Session with headers set.
+        url: URL to fetch. Defaults to the homepage.
+
+    Returns:
+        bs4.BeautifulSoup: The page response that contains the ondemand.s
+        file reference (either from the given URL or the search page fallback).
+    """
+    response = session.get(url=url)
+    home_page = bs4.BeautifulSoup(response.content, 'html.parser')
+
+    # Check if ondemand.s is present
+    if ON_DEMAND_FILE_REGEX.search(str(home_page)):
+        return home_page
+
+    # Fallback: use the search page which still has the legacy frontend
+    search_url = "https://x.com/search?q=AI&f=live"
+    search_response = session.get(url=search_url)
+    search_page = bs4.BeautifulSoup(search_response.content, 'html.parser')
+
+    if ON_DEMAND_FILE_REGEX.search(str(search_page)):
+        return search_page
+
+    return home_page  # Return original even if ondemand.s not found
+
+
 def handle_x_migration(session):
     # for python requests -> session = requests.Session()
     # session.headers = generate_headers()
