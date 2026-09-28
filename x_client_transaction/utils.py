@@ -5,7 +5,7 @@ from typing import Union
 
 import bs4
 
-from .constants import MIGRATION_REDIRECTION_REGEX, ON_DEMAND_FILE_REGEX, ON_DEMAND_FILE_URL, ON_DEMAND_HASH_PATTERN
+from .constants import HOME_PAGE_URL, MIGRATION_REDIRECTION_REGEX, ON_DEMAND_FILE_REGEX, ON_DEMAND_FILE_URL, ON_DEMAND_HASH_PATTERN
 
 
 class Math:
@@ -65,7 +65,7 @@ def get_ondemand_file_url(response: bs4.BeautifulSoup):
 def handle_x_migration(session):
     # for python requests -> session = requests.Session()
     # session.headers = generate_headers()
-    response = session.request(method="GET", url="https://x.com/home")
+    response = session.request(method="GET", url=HOME_PAGE_URL)
     home_page = bs4.BeautifulSoup(response.content, 'html.parser')
     migration_redirection_url = get_migration_url(response=home_page)
     if migration_redirection_url:
@@ -81,7 +81,7 @@ def handle_x_migration(session):
 
 async def handle_x_migration_async(session):
     # for httpx -> session = httpx.AsyncClient(headers=generate_headers())
-    response = await session.request(method="GET", url="https://x.com/home")
+    response = await session.request(method="GET", url=HOME_PAGE_URL)
     home_page = bs4.BeautifulSoup(response.content, 'html.parser')
     migration_redirection_url = get_migration_url(response=home_page)
     if migration_redirection_url:
